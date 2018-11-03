@@ -319,7 +319,7 @@ class PPO2(ActorCriticRLModel):
                 if callback is not None:
                     callback(locals(), globals())
 
-                if self.verbose >= 1 and ((update + 1) % log_interval//100 == 0 or update == 0):
+                if self.verbose >= 1 and ((update + 1) % log_interval == 0 or update == 0):
                     explained_var = explained_variance(values, returns)
                     logger.logkv("serial_timesteps", (update + 1) * self.n_steps)
                     logger.logkv("nupdates", (update + 1))
