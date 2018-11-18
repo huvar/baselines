@@ -40,7 +40,7 @@ class PPO2(ActorCriticRLModel):
 
     def __init__(self, policy, env, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.5,
                  max_grad_norm=0.5, lam=0.95, nminibatches=4, noptepochs=4, cliprange=0.2, verbose=0,
-                 tensorboard_log=None, _init_setup_model=True):
+                 tensorboard_log=None, _init_setup_model=True, **kwargs):
 
         super(PPO2, self).__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=True,
                                    _init_setup_model=_init_setup_model)
@@ -94,9 +94,9 @@ class PPO2(ActorCriticRLModel):
         self.episode_reward = None
 
         if _init_setup_model:
-            self.setup_model()
+            self.setup_model(**kwargs)
 
-    def setup_model(self):
+    def setup_model(self, **kwargs):
         with SetVerbosity(self.verbose):
 
             assert issubclass(self.policy, ActorCriticPolicy), "Error: the input policy for the PPO2 model must be " \
@@ -121,12 +121,12 @@ class PPO2(ActorCriticRLModel):
                     n_batch_train = self.n_batch // self.nminibatches
 
                 act_model = self.policy(self.sess, self.observation_space, self.action_space, self.n_envs, 1,
-                                        n_batch_step, reuse=False)
+                                        n_batch_step, reuse=False, **kwargs)
                 with tf.variable_scope("train_model", reuse=True,
                                        custom_getter=tf_util.outer_scope_getter("train_model")):
                     train_model = self.policy(self.sess, self.observation_space, self.action_space,
                                               self.n_envs // self.nminibatches, self.n_steps, n_batch_train,
-                                              reuse=True)
+                                              reuse=True, **kwargs)
 
                 with tf.variable_scope("loss", reuse=False):
                     self.action_ph = train_model.pdtype.sample_placeholder([None], name="action_ph")
